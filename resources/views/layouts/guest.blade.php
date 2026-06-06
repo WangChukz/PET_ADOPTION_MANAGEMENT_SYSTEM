@@ -26,5 +26,8 @@
                 {{ $slot }}
             </div>
         </div>
-    </body>
+    @if (auth()->check() && !request()->routeIs('login', 'register'))
+        @include('components.chatbox-widget')
+    @endif
+</body>
 </html>
