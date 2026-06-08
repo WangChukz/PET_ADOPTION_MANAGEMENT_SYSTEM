@@ -254,15 +254,69 @@ class ChatboxService
         $isStaff = $userModel ? $userModel->isStaff() : false;
 
         // Lấy danh sách thú cưng đang sẵn sàng nhận nuôi để làm ngữ cảnh thực tế cho AI
-        $availablePets = \App\Models\Pet::where('Trang_thai', 'san_sang')->get(['Ma_thu_cung', 'Ten', 'Loai', 'Giong', 'Gioi_tinh', 'Nhom_tuoi']);
+        $availablePets = \App\Models\Pet::where('Trang_thai', 'san_sang')->get(['Ma_thu_cung', 'Ten', 'Loai', 'Giong', 'Gioi_tinh', 'Nhom_tuoi', 'Can_nang']);
         $petsListStr = "";
         foreach ($availablePets as $idx => $p) {
             $loai = $p->Loai === 'cho' ? 'Chó' : ($p->Loai === 'meo' ? 'Mèo' : 'Khác');
-            $petsListStr .= ($idx + 1) . ". Bé {$p->Ten}: Giống {$p->Giong} ({$loai}), Giới tính {$p->Gioi_tinh}, Nhóm tuổi: {$p->Nhom_tuoi}, ID: {$p->Ma_thu_cung}\n";
+            $petsListStr .= ($idx + 1) . ". Bé {$p->Ten}: Giống {$p->Giong} ({$loai}), Giới tính {$p->Gioi_tinh}, Nhóm tuổi: {$p->Nhom_tuoi}, Cân nặng: {$p->Can_nang}kg, ID: {$p->Ma_thu_cung}\n";
         }
 
         $systemPrompt = "Bạn là Trợ lý ảo hỗ trợ thông minh của trạm cứu hộ động vật PETJAM.\n";
         $systemPrompt .= "Nhiệm vụ của bạn là tư vấn thông tin nhận nuôi, cứu hộ thú cưng và hỗ trợ người dùng chuyển hướng trang trong hệ thống.\n\n";
+
+        if ($userModel) {
+            $personalInfo = "THÔNG TIN CÁ NHÂN CỦA KHÁCH HÀNG ĐANG CHAT (DÙNG ĐỂ XƯNG HÔ VÀ TRẢ LỜI NẾU HỌ HỎI VỀ BẢN THÂN):\n";
+            $personalInfo .= "- Họ và tên: " . ($userModel->Ho_ten ?? 'Chưa cập nhật') . "\n";
+            $personalInfo .= "- Số điện thoại: " . ($userModel->So_dien_thoai ?? 'Chưa cập nhật') . "\n";
+            $personalInfo .= "- Địa chỉ: " . ($userModel->Dia_chi ?? 'Chưa cập nhật') . "\n";
+            
+            // Đơn nhận nuôi và thú cưng đã nhận
+            $userApplications = \App\Models\AdoptionApplication::where('Ma_nguoi_dung', $userId)->with('thuCung')->get();
+            if ($userApplications->isEmpty()) {
+                $personalInfo .= "- Lịch sử nhận nuôi: Khách hàng chưa có đơn đăng ký nhận nuôi nào.\n";
+            } else {
+                $personalInfo .= "- Lịch sử Đơn đăng ký nhận nuôi của khách:\n";
+                foreach ($userApplications as $app) {
+                    $petName = $app->thuCung ? $app->thuCung->Ten : 'Không rõ';
+                    $statusLabel = $app->trang_thai_label;
+                    $personalInfo .= "  + Đơn nhận nuôi bé {$petName} (Trạng thái: {$statusLabel}).\n";
+                    
+                    // Lịch phỏng vấn
+                    $schedule = \App\Models\InterviewSchedule::where('Ma_don', $app->Ma_don)->first();
+                    if ($schedule) {
+                        $time = $schedule->Thoi_gian_du_kien ? \Carbon\Carbon::parse($schedule->Thoi_gian_du_kien)->format('H:i d/m/Y') : 'Chưa xếp lịch';
+                        $statusText = match($schedule->Trang_thai) {
+                            'da_len_lich' => 'Đã lên lịch',
+                            'da_hoan_thanh' => 'Đã hoàn thành',
+                            'da_huy' => 'Đã hủy',
+                            default => $schedule->Trang_thai
+                        };
+                        $personalInfo .= "    -> Lịch phỏng vấn: {$time} - Trạng thái PV: {$statusText}.\n";
+                    }
+                }
+            }
+
+            // Ủng hộ
+            $userDonations = \App\Models\Donation::where('Ma_nguoi_dung', $userId)->where('Trang_thai', 'success')->get();
+            if ($userDonations->isNotEmpty()) {
+                $totalDonated = $userDonations->sum('So_tien');
+                $totalDonatedFormatted = number_format($totalDonated, 0, ',', '.') . ' VNĐ';
+                $personalInfo .= "- Lịch sử quyên góp: Khách hàng đã đóng góp tổng cộng {$totalDonatedFormatted} qua " . $userDonations->count() . " lần giao dịch thành công.\n";
+            } else {
+                $personalInfo .= "- Lịch sử quyên góp: Khách chưa có giao dịch ủng hộ thành công nào.\n";
+            }
+            
+            $systemPrompt .= $personalInfo . "\n";
+        }
+
+        if ($isAdmin || $isStaff) {
+            $pendingAdoptionsCount = \App\Models\AdoptionApplication::where('Trang_thai', 'cho_duyet')->count();
+            $pendingInterviewsCount = \App\Models\InterviewSchedule::whereIn('Trang_thai', ['cho_phong_van'])->count();
+            $systemPrompt .= "THÔNG TIN QUẢN TRỊ NỘI BỘ (CHỈ DÀNH CHO BẠN BIẾT ĐỂ BÁO CÁO ADMIN):\n";
+            $systemPrompt .= "- Số lượng Đơn nhận nuôi đang chờ duyệt: {$pendingAdoptionsCount} đơn.\n";
+            $systemPrompt .= "- Số lượng Lịch phỏng vấn sắp tới (chờ phỏng vấn): {$pendingInterviewsCount} lịch.\n";
+            $systemPrompt .= "Nếu Quản trị viên hỏi về tình hình đơn hoặc lịch phỏng vấn, hãy dùng số liệu trên để báo cáo nhanh.\n\n";
+        }
 
         // Thêm ngữ cảnh danh sách thú cưng thực tế
         $systemPrompt .= "DANH SÁCH THÚ CƯNG THỰC TẾ ĐANG CÓ TẠI TRẠM (CỬA HÀNG):\n";
@@ -276,8 +330,13 @@ class ChatboxService
         // Quy tắc lọc lạc đề
         $systemPrompt .= "QUY TẮC PHẠM VI CHỦ ĐỀ (BẮT BUỘC):\n";
         $systemPrompt .= "Bạn chỉ được trả lời các câu hỏi liên quan đến cứu hộ động vật, nhận nuôi thú cưng, quyên góp ủng hộ, hoạt động của trạm PETJAM và các chức năng của website PETJAM. ";
-        $systemPrompt .= "Nếu người dùng hỏi câu hỏi không liên quan đến chủ đề này (ví dụ: thời tiết, công nghệ, toán học, lập trình, viết code, danh nhân, kiến thức ngoài lề...), bạn TUYỆT ĐỐI KHÔNG được trả lời mà phải từ chối một cách lịch sự, thân thiện và hướng họ quay lại chủ đề chính. Ví dụ: 'Tôi là trợ lý ảo của PETJAM, tôi chỉ có thể hỗ trợ các thông tin liên quan đến cứu hộ, nhận nuôi hoặc gây quỹ ủng hộ thú cưng. Bạn có câu hỏi nào về các bé chó mèo cần giúp đỡ không ạ?'\n";
+        $systemPrompt .= "LƯU Ý QUAN TRỌNG: Các câu hỏi về lịch phỏng vấn cá nhân, tiến độ đơn nhận nuôi, thông tin tài khoản và lịch sử ủng hộ của khách hàng HOÀN TOÀN HỢP LỆ. Bạn PHẢI dùng thông tin cá nhân đã được cung cấp ở trên để trả lời họ trực tiếp thay vì từ chối.\n";
+        $systemPrompt .= "Nếu người dùng hỏi câu hỏi hoàn toàn không liên quan đến các chủ đề trên (ví dụ: thời tiết, công nghệ, toán học, lập trình, viết code, danh nhân, kiến thức ngoài lề...), bạn TUYỆT ĐỐI KHÔNG được trả lời mà phải từ chối một cách lịch sự, thân thiện. Ví dụ: 'Tôi là trợ lý ảo của PETJAM, tôi chỉ có thể hỗ trợ các thông tin liên quan đến cứu hộ, nhận nuôi hoặc gây quỹ ủng hộ thú cưng.'\n";
         $systemPrompt .= "LƯU Ý ĐẶC BIỆT: Việc người dùng tải lên ảnh chân dung của họ hoặc bạn bè để nhờ tư vấn loại thú cưng (chó, mèo) phù hợp với tính cách/phong thái của họ là HOÀN TOÀN HỢP LỆ và thuộc phạm vi tư vấn nhận nuôi. Bạn tuyệt đối không được từ chối hoặc coi yêu cầu này là lạc đề!\n\n";
+
+        // Quy tắc chống nội dung độc hại, nói bậy (Safety & Moderation)
+        $systemPrompt .= "QUY TẮC KIỂM DUYỆT (SAFETY & MODERATION - BẮT BUỘC):\n";
+        $systemPrompt .= "Nếu phát hiện người dùng sử dụng từ ngữ tục tĩu, chửi thề, quấy rối, xúc phạm hoặc có nội dung không lành mạnh, bạn TUYỆT ĐỐI KHÔNG trả lời vào trọng tâm câu hỏi mà phải từ chối phục vụ ngay lập tức, và nhắc nhở họ giữ thái độ lịch sự, văn minh.\n\n";
 
         // Quy tắc phân tích ảnh (Vision)
         $systemPrompt .= "QUY TẮC PHÂN TÍCH HÌNH ẢNH (VISION):\n";
@@ -296,30 +355,30 @@ class ChatboxService
         $systemPrompt .= "CÁC ĐƯỜNG DẪN TRANG CHÍNH THỨC TRONG HỆ THỐNG PETJAM:\n";
         $systemPrompt .= "- Xem danh sách thú cưng: /nhan-nuoi\n";
         $systemPrompt .= "- Xem chi tiết và đăng ký nhận nuôi thú cưng cụ thể: /nhan-nuoi/{id} hoặc /nhan-nuoi/{id}/dang-ky\n";
-        $systemPrompt .= "- Xem lịch sử đơn nhận nuôi và chọn lịch phỏng vấn của bản thân: /tai-khoan/lich-su-nhan-nuoi\n";
+        $systemPrompt .= "- Xem tiến trình duyệt đơn, kết quả đăng ký, hoặc xếp lịch phỏng vấn: /tai-khoan/lich-su-nhan-nuoi\n";
         $systemPrompt .= "- Sửa thông tin tài khoản cá nhân: /profile\n";
         $systemPrompt .= "- Xem các chiến dịch ủng hộ/gây quỹ: /ung-ho\n";
         $systemPrompt .= "- Thực hiện quyên góp ủng hộ: /ung-ho/thuc-hien\n\n";
 
         if ($isAdmin || $isStaff) {
             $systemPrompt .= "Vì bạn đang trò chuyện với Quản trị viên (ADMIN/STAFF), bạn có quyền cung cấp thông tin và điều hướng đến các trang quản lý sau:\n";
-            $systemPrompt .= "- Quản lý thú cưng (Thêm/Sửa/Xóa): /admin/pets\n";
-            $systemPrompt .= "- Xem và quản lý các đơn đăng ký nhận nuôi thú cưng: /admin/adoptions\n";
-            $systemPrompt .= "- Quản lý lịch phỏng vấn: /admin/interview_schedules\n";
-            $systemPrompt .= "- Quản lý chiến dịch gây quỹ: /admin/donation_campaigns\n";
-            $systemPrompt .= "- Xem danh sách các giao dịch quyên góp của nhà hảo tâm: /admin/donations\n";
-            $systemPrompt .= "- Quản lý tài khoản người dùng: /admin/users\n";
-            $systemPrompt .= "- Cấu hình cài đặt chung của hệ thống: /admin/settings#general hoặc /admin/settings\n";
-            $systemPrompt .= "- Cấu hình Email hệ thống: /admin/settings#email\n";
-            $systemPrompt .= "- Cấu hình Thanh toán hệ thống (VNPAY): /admin/settings#payment\n";
-            $systemPrompt .= "- Cấu hình Thông báo hệ thống: /admin/settings#notification\n";
-            $systemPrompt .= "- Quản lý Phân quyền (Roles & Permissions): /admin/settings#roles\n";
-            $systemPrompt .= "- Cấu hình Sao lưu & Phục hồi hệ thống: /admin/settings#backup\n";
-            $systemPrompt .= "- Cấu hình Chatbox AI (quản lý Groq API Keys & token limit): /admin/settings#chatbox\n";
-            $systemPrompt .= "- Nhật ký hoạt động hệ thống (System Logs): /admin/settings#logs\n\n";
+            $systemPrompt .= "- Quản lý thú cưng (Thêm/Sửa/Xóa): /quan-tri/thu-cung\n";
+            $systemPrompt .= "- Xem và quản lý các đơn đăng ký nhận nuôi thú cưng: /quan-tri/don-nhan-nuoi\n";
+            $systemPrompt .= "- Quản lý lịch phỏng vấn: /quan-tri/lich-phong-van\n";
+            $systemPrompt .= "- Quản lý chiến dịch gây quỹ: /quan-tri/chien-dich-ung-ho\n";
+            $systemPrompt .= "- Xem danh sách các giao dịch quyên góp của nhà hảo tâm: /quan-tri/ung-ho\n";
+            $systemPrompt .= "- Quản lý tài khoản người dùng: /quan-tri/nguoi-dung\n";
+            $systemPrompt .= "- Cấu hình cài đặt chung của hệ thống: /quan-tri/cai-dat#general hoặc /quan-tri/cai-dat\n";
+            $systemPrompt .= "- Cấu hình Email hệ thống: /quan-tri/cai-dat#email\n";
+            $systemPrompt .= "- Cấu hình Thanh toán hệ thống (VNPAY): /quan-tri/cai-dat#payment\n";
+            $systemPrompt .= "- Cấu hình Thông báo hệ thống: /quan-tri/cai-dat#notification\n";
+            $systemPrompt .= "- Quản lý Phân quyền (Roles & Permissions): /quan-tri/cai-dat#roles\n";
+            $systemPrompt .= "- Cấu hình Sao lưu & Phục hồi hệ thống: /quan-tri/cai-dat#backup\n";
+            $systemPrompt .= "- Cấu hình Chatbox AI (quản lý Groq API Keys & token limit): /quan-tri/cai-dat#chatbox\n";
+            $systemPrompt .= "- Nhật ký hoạt động hệ thống (System Logs): /quan-tri/cai-dat#logs\n\n";
         } else {
             $systemPrompt .= "QUY TẮC BẢO MẬT VAI TRÒ (BẮT BUỘC):\n";
-            $systemPrompt .= "Người dùng này là khách hàng bình thường, KHÔNG phải Admin hay Staff. Bạn TUYỆT ĐỐI KHÔNG được tiết lộ bất kỳ thông tin nào về các trang quản lý admin (bắt đầu bằng `/admin/`) hay hướng dẫn các thao tác quản trị cho họ. Không bao giờ được chèn thẻ [REDIRECT] hướng đến các đường dẫn `/admin/...` đối với người dùng này.\n\n";
+            $systemPrompt .= "Người dùng này là khách hàng bình thường, KHÔNG phải Admin hay Staff. Bạn TUYỆT ĐỐI KHÔNG được tiết lộ bất kỳ thông tin nào về các trang quản lý admin (bắt đầu bằng `/quan-tri/`) hay hướng dẫn các thao tác quản trị cho họ. Không bao giờ được chèn thẻ [REDIRECT] hướng đến các đường dẫn `/quan-tri/...` đối với người dùng này.\n\n";
         }
 
         $systemPrompt .= "QUY TẮC ĐIỀU HƯỚNG:\n";
