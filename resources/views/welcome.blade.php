@@ -325,36 +325,36 @@
         <!-- Right Masonry Grid -->
         <div class="col-span-1 md:col-span-9 grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- Large vertical -->
-            <div class="relative rounded-2xl overflow-hidden md:col-span-1 md:row-span-2 group h-[300px] md:h-full">
-                <img src="https://images.unsplash.com/photo-1601758177266-bc599de87707?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Volunteer">
+            <div class="relative rounded-2xl overflow-hidden transform-gpu md:col-span-1 md:row-span-2 group h-[300px] md:h-full">
+                <img src="https://images.unsplash.com/photo-1601758177266-bc599de87707?q=80&w=800&auto=format&fit=crop" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Volunteer">
                 <div class="absolute bottom-4 left-4 right-4 bg-white/95 rounded-full px-4 py-2 text-center shadow-sm">
                     <span class="text-xs font-bold text-dark">Cứu hộ động vật bị bỏ rơi</span>
                 </div>
             </div>
             <!-- Small 1 -->
-            <div class="relative rounded-2xl overflow-hidden group h-[180px]">
-                <img src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Care">
+            <div class="relative rounded-2xl overflow-hidden transform-gpu group h-[180px]">
+                <img src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?q=80&w=600&auto=format&fit=crop" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Care">
                 <div class="absolute bottom-4 left-4 right-4 bg-white/95 rounded-full px-4 py-2 text-center shadow-sm">
                     <span class="text-xs font-bold text-dark">Chăm sóc & phục hồi sức khỏe</span>
                 </div>
             </div>
             <!-- Small 2 -->
-            <div class="relative rounded-2xl overflow-hidden group h-[180px]">
-                <img src="https://images.unsplash.com/photo-1522276498395-f4f68f7f8454?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Event">
+            <div class="relative rounded-2xl overflow-hidden transform-gpu group h-[180px]">
+                <img src="https://images.unsplash.com/photo-1522276498395-f4f68f7f8454?q=80&w=600&auto=format&fit=crop" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Event">
                 <div class="absolute bottom-4 left-4 right-4 bg-white/95 rounded-full px-4 py-2 text-center shadow-sm">
                     <span class="text-xs font-bold text-dark">Tổ chức ngày hội nhận nuôi</span>
                 </div>
             </div>
             <!-- Small 3 -->
-            <div class="relative rounded-2xl overflow-hidden group h-[180px]">
-                <img src="https://images.unsplash.com/photo-1533743983669-94fa5c4338ec?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Transport">
+            <div class="relative rounded-2xl overflow-hidden transform-gpu group h-[180px]">
+                <img src="https://images.unsplash.com/photo-1533743983669-94fa5c4338ec?q=80&w=600&auto=format&fit=crop" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Transport">
                 <div class="absolute bottom-4 left-4 right-4 bg-white/95 rounded-full px-4 py-2 text-center shadow-sm">
                     <span class="text-xs font-bold text-dark">Vận chuyển đến mái ấm mới</span>
                 </div>
             </div>
             <!-- Small 4 -->
-            <div class="relative rounded-2xl overflow-hidden group h-[180px]">
-                <img src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Community">
+            <div class="relative rounded-2xl overflow-hidden transform-gpu group h-[180px]">
+                <img src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?q=80&w=600&auto=format&fit=crop" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Community">
                 <div class="absolute bottom-4 left-4 right-4 bg-white/95 rounded-full px-4 py-2 text-center shadow-sm">
                     <span class="text-xs font-bold text-dark">Lan tỏa yêu thương</span>
                 </div>
@@ -518,8 +518,8 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- News 1 -->
         <a href="#" class="pet-card group p-4 flex flex-col">
-            <div class="relative h-40 mb-4 rounded-[16px] overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="News">
+            <div class="relative h-40 mb-4 rounded-[16px] overflow-hidden transform-gpu">
+                <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=600&auto=format&fit=crop" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="News">
                 <div class="absolute top-3 left-3 bg-white text-primary text-[10px] font-black rounded-full px-3 py-1 shadow-sm uppercase tracking-wider">Chăm sóc thú cưng</div>
             </div>
             <h3 class="text-base font-black text-dark mb-4 leading-tight group-hover:text-primary transition-colors">5 lưu ý khi đưa chó mèo mới về nhà</h3>
@@ -530,8 +530,8 @@
         </a>
         <!-- News 2 -->
         <a href="#" class="pet-card group p-4 flex flex-col">
-            <div class="relative h-40 mb-4 rounded-[16px] overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1522276498395-f4f68f7f8454?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="News">
+            <div class="relative h-40 mb-4 rounded-[16px] overflow-hidden transform-gpu">
+                <img src="https://images.unsplash.com/photo-1522276498395-f4f68f7f8454?q=80&w=600&auto=format&fit=crop" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="News">
                 <div class="absolute top-3 left-3 bg-white text-primary text-[10px] font-black rounded-full px-3 py-1 shadow-sm uppercase tracking-wider">Tin tức</div>
             </div>
             <h3 class="text-base font-black text-dark mb-4 leading-tight group-hover:text-primary transition-colors">Ngày hội nhận nuôi thú cưng tháng 6/2026</h3>
@@ -542,8 +542,8 @@
         </a>
         <!-- News 3 -->
         <a href="#" class="pet-card group p-4 flex flex-col">
-            <div class="relative h-40 mb-4 rounded-[16px] overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1513360371669-4adf3dd7dff8?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="News">
+            <div class="relative h-40 mb-4 rounded-[16px] overflow-hidden transform-gpu">
+                <img src="https://images.unsplash.com/photo-1513360371669-4adf3dd7dff8?q=80&w=600&auto=format&fit=crop" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="News">
                 <div class="absolute top-3 left-3 bg-white text-primary text-[10px] font-black rounded-full px-3 py-1 shadow-sm uppercase tracking-wider">Câu chuyện</div>
             </div>
             <h3 class="text-base font-black text-dark mb-4 leading-tight group-hover:text-primary transition-colors">Hành trình giải cứu bé mèo kẹt trong cống</h3>
@@ -554,8 +554,8 @@
         </a>
         <!-- News 4 -->
         <a href="#" class="pet-card group p-4 flex flex-col">
-            <div class="relative h-40 mb-4 rounded-[16px] overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1544568100-847a948585b9?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="News">
+            <div class="relative h-40 mb-4 rounded-[16px] overflow-hidden transform-gpu">
+                <img src="https://images.unsplash.com/photo-1544568100-847a948585b9?q=80&w=600&auto=format&fit=crop" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="News">
                 <div class="absolute top-3 left-3 bg-white text-primary text-[10px] font-black rounded-full px-3 py-1 shadow-sm uppercase tracking-wider">Hoạt động</div>
             </div>
             <h3 class="text-base font-black text-dark mb-4 leading-tight group-hover:text-primary transition-colors">Chúng tôi đã tổ chức buổi tiêm phòng miễn phí</h3>
