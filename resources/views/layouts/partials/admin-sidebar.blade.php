@@ -28,7 +28,7 @@
     <!-- Navigation Links -->
     <nav class="flex-1 overflow-y-auto px-2 pb-2 custom-scrollbar">
         
-        <!-- SECTION: TỔNG QUAN (Ẩn theo yêu cầu) 
+        <!-- SECTION: TỔNG QUAN -->
         <div class="mt-2 mb-1">
             <h3 x-show="expanded" class="px-2 text-[9px] font-bold text-white/50 uppercase tracking-widest">Tổng Quan</h3>
             <div x-show="!expanded" class="h-3 border-b border-white/10 mx-2 mb-2"></div>
@@ -44,9 +44,7 @@
                 </svg>
                 <span class="text-[12px] truncate" x-show="expanded">Dashboard</span>
             </a>
-
         </div>
-        -->
 
         <!-- SECTION: QUẢN LÝ -->
         <div class="mt-3 mb-1">
